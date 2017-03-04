@@ -1,5 +1,6 @@
 import tvdb_api
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def get_date_obj(date_string):
     return datetime.strptime(date_string, "%Y-%m-%d")
@@ -65,3 +66,16 @@ def get_details(tvShowName):
         nextDateString = get_readable_date(nextDateString)
     details_string = "{}:\nLatest Episode: S{}E{}-{} airdate:{}\nNext Episode on: {}".format(tvShowName, S, E, episode_details['episodename'], airdateString, nextDateString)
     return details_string
+
+def wait_for_futures(futures):
+    for future in futures:
+        print future.result()
+
+def get_details_parallel(tvShows):
+    pool = ThreadPoolExecutor(len(tvShows))
+    futures = []
+
+    for tvShowName in tvShows:
+        futures.append(pool.submit(get_details, tvShowName))
+
+    wait_for_futures(futures)
